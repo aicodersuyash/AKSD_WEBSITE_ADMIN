@@ -156,6 +156,36 @@
   .r-del { background: none; border: none; cursor: pointer; color: var(--red); font-size: 13px; opacity: 0.5; transition: opacity 0.2s; padding: 4px; }
   .r-del:hover { opacity: 1; }
   .format-box { background: var(--bg); border-radius: 10px; padding: 16px; border: 1px solid var(--border); font-size: 0.82rem; color: var(--mid); line-height: 2; }
+  .r-print { background: none; border: none; cursor: pointer; color: var(--accent); font-size: 13px; opacity: 0.6; transition: opacity 0.2s; padding: 4px 6px; }
+  .r-print:hover { opacity: 1; }
+
+  /* SUBJECT CONFIG MODAL */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(7,26,64,0.55); z-index: 500; align-items: center; justify-content: center; padding: 20px; }
+  .modal-overlay.active { display: flex; }
+  .modal-box { background: white; border-radius: 16px; width: 100%; max-width: 640px; max-height: 88vh; display: flex; flex-direction: column; box-shadow: 0 24px 80px rgba(0,0,0,0.35); }
+  .modal-head { padding: 18px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .modal-head h3 { font-size: 1.05rem; font-weight: 700; color: var(--navy); }
+  .modal-close { background: none; border: none; font-size: 16px; cursor: pointer; color: var(--light); padding: 4px 8px; }
+  .modal-close:hover { color: var(--red); }
+  .modal-body { padding: 20px 24px; overflow-y: auto; flex: 1; }
+  .modal-hint { font-size: 0.82rem; color: var(--mid); line-height: 1.6; margin-bottom: 18px; }
+  .modal-foot { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; }
+  .btn-secondary { padding: 11px 20px; border-radius: 8px; border: 1.5px solid var(--border); background: white; font-family: 'DM Sans', sans-serif; font-size: 0.88rem; font-weight: 600; color: var(--mid); cursor: pointer; transition: all 0.2s; }
+  .btn-secondary:hover { border-color: var(--light); }
+
+  .subj-section-block { margin-bottom: 20px; }
+  .subj-section-title { font-size: 12px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; color: var(--navy); margin-bottom: 8px; display: flex; align-items: baseline; gap: 8px; }
+  .subj-section-title span { font-size: 10.5px; font-weight: 500; text-transform: none; letter-spacing: 0; color: var(--light); }
+  .subj-list { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+  .subj-row { display: flex; align-items: center; gap: 10px; padding: 9px 14px; background: white; border-bottom: 1px solid var(--border); }
+  .subj-row:last-child { border-bottom: none; }
+  .subj-order { width: 20px; height: 20px; border-radius: 50%; background: var(--bg); color: var(--mid); font-size: 10.5px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .subj-name { flex: 1; font-size: 0.86rem; font-weight: 600; color: var(--text); }
+  .subj-actions { display: flex; gap: 4px; flex-shrink: 0; }
+  .subj-actions button { background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 5px 9px; font-size: 11px; cursor: pointer; color: var(--mid); transition: all 0.15s; }
+  .subj-actions button:hover { border-color: var(--gold); color: var(--gold); }
+  .subj-toggle { font-size: 10.5px !important; font-weight: 600; white-space: nowrap; }
+  .subj-empty { padding: 16px; text-align: center; color: var(--light); font-size: 0.8rem; }
 
   @media(max-width:900px) { .dash-grid { grid-template-columns: 1fr; } .stat-row { grid-template-columns: 1fr 1fr; } .quick-grid { grid-template-columns: 1fr; } .results-panel { grid-template-columns: 1fr; } }
   @media(max-width:500px) { .login-card { padding: 32px 24px; } .tabs { flex-wrap: wrap; } .gallery-grid { grid-template-columns: repeat(3,1fr); } }
@@ -176,7 +206,7 @@
     <div class="topbar-name">AKSD Admin Panel<span>Deoghar, Jharkhand</span></div>
   </div>
   <div class="topbar-right">
-    <a href="https://web.theaksd.org" target="_blank" class="btn-visit">← Visit Website</a>
+    <a href="https://theaksd.org" target="_blank" class="btn-visit">← Visit Website</a>
     <span class="topbar-email" id="topEmail"><span class="status-dot"></span><span id="adminEmailLabel"></span></span>
     <button class="btn-logout" id="btnLogout" onclick="doLogout()">Logout</button>
   </div>
@@ -218,7 +248,7 @@
         <h1>📋 AKSD Admin Panel</h1>
         <p id="dashGreet">Welcome back!</p>
       </div>
-      <a href="https://web.theaksd.org" target="_blank"
+      <a href="https://theaksd.org" target="_blank"
          style="background:var(--navy);color:white;padding:10px 22px;border-radius:8px;text-decoration:none;font-size:0.85rem;font-weight:700">
         👁️ View Public Site
       </a>
@@ -365,12 +395,41 @@
   </div>
 </div>
 
+<!-- SUBJECT CONFIG MODAL -->
+<div class="modal-overlay" id="subjModalOverlay">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3>⚙️ Configure Subject Order &amp; Sections</h3>
+      <button class="modal-close" onclick="cancelSubjectConfig()">✕</button>
+    </div>
+    <div class="modal-body">
+      <p class="modal-hint">Set the fixed display order and section for each subject before this result set goes live. This layout is saved for this class, so it auto-fills next time you upload — no need to redo it every term.</p>
+      <div class="subj-section-block">
+        <div class="subj-section-title">📊 Marks Section <span>out of 100 — counted in final percentage</span></div>
+        <div class="subj-list" id="subjListMarks"></div>
+      </div>
+      <div class="subj-section-block">
+        <div class="subj-section-title">🏅 Grading Section <span>grade only — not counted in percentage</span></div>
+        <div class="subj-list" id="subjListGrading"></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-secondary" onclick="cancelSubjectConfig()">Cancel</button>
+      <button class="btn-post" style="width:auto;padding:11px 26px;margin-top:0" onclick="confirmSubjectConfig()">✅ Confirm &amp; Upload</button>
+    </div>
+  </div>
+</div>
+
+<!-- PRINT-ALL STATUS TOAST (reuses post-success styling inline) -->
+<div id="printStatus" class="post-success" style="position:fixed;bottom:24px;right:24px;max-width:320px;z-index:600;box-shadow:0 8px 30px rgba(0,0,0,0.15);"></div>
+
 <script type="module">
 import { initializeApp }    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, sendPasswordResetEmail }
                             from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { getFirestore, collection, addDoc, deleteDoc, getDocs,
-         doc, query, orderBy, onSnapshot, serverTimestamp, writeBatch }
+         doc, query, orderBy, onSnapshot, serverTimestamp, writeBatch,
+         setDoc, getDoc }
                             from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -547,16 +606,152 @@ const dz=document.getElementById('dropZone');
 if(dz){ dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('drag');}); dz.addEventListener('dragleave',()=>dz.classList.remove('drag')); dz.addEventListener('drop',async e=>{ e.preventDefault();dz.classList.remove('drag'); const files=Array.from(e.dataTransfer.files).filter(f=>f.type.startsWith('image/')); if(!files.length) return; let done=0; for(const f of files){ document.getElementById('photoCount').textContent=`Uploading ${done+1} / ${files.length}…`; try{const src=await compressImage(f);await addDoc(collection(db,'gallery'),{src,name:f.name.replace(/\.[^.]+$/,''),uploadedAt:serverTimestamp()});done++;}catch(err){setStatus('postSuccess',`Failed: ${err.message}`,false);} } if(done>0) setStatus('postSuccess',`${done} photo(s) uploaded!`); }); }
 
 // ══ RESULTS ══
+let allResultSets = []; // cached for the print-whole-class feature
+
 function initResults() {
   const list=document.getElementById('resultList');
   onSnapshot(query(collection(db,'results'),orderBy('uploadedAt','desc')),snap=>{
     const arr=snap.docs.map(d=>({id:d.id,...d.data()}));
+    allResultSets = arr;
     document.getElementById('statResults').textContent=arr.length;
     list.innerHTML=!arr.length
       ?'<div style="text-align:center;padding:20px;color:var(--light);font-size:0.85rem">No results uploaded yet.</div>'
-      :arr.map(r=>`<div class="result-item"><div class="r-info"><span class="r-tag">${esc(r.term)}</span><strong style="color:var(--navy)">${esc(r.className)}</strong><span style="color:var(--mid);font-size:0.82rem">${esc(r.session)} · ${r.fileName}</span></div><button class="r-del" onclick="window._delR('${r.id}')">🗑️</button></div>`).join('');
+      :arr.map(r=>`<div class="result-item"><div class="r-info"><span class="r-tag">${esc(r.term)}</span><strong style="color:var(--navy)">${esc(r.className)}</strong><span style="color:var(--mid);font-size:0.82rem">${esc(r.session)} · ${r.studentCount||(r.parsedData?r.parsedData.length:0)} students</span></div><div style="display:flex;align-items:center"><button class="r-print" title="Print whole class" onclick="window._printR('${r.id}')">🖨️</button><button class="r-del" onclick="window._delR('${r.id}')">🗑️</button></div></div>`).join('');
   });
 }
+
+// The fixed identity fields we never treat as a "subject" column.
+const RESULT_FIXED_COLS = ['roll number','roll no','name','student name','father\'s name','father name',
+  'mother\'s name','mother name','class','section','drawing','writing',
+  'total','total marks','%','percentage','attendance','remark','remarks','rank'];
+// Column names that make sense as grade-only by default (admin can still change this).
+const GRADING_HINTS = ['table'];
+
+function buildSubjectConfig(names, template) {
+  if (template && template.length) {
+    const templByName = {};
+    template.forEach(t => templByName[t.name] = t);
+    const present  = names.filter(n => templByName[n]);
+    const newOnes  = names.filter(n => !templByName[n]);
+    const sorted   = present.slice().sort((a,b) => (templByName[a].order||0) - (templByName[b].order||0));
+    const marksArr   = sorted.filter(n => templByName[n].section !== 'grading').map(n => ({name:n, section:'marks'}));
+    const gradingArr = sorted.filter(n => templByName[n].section === 'grading').map(n => ({name:n, section:'grading'}));
+    newOnes.forEach(n => marksArr.push({name:n, section:'marks'}));
+    return marksArr.concat(gradingArr);
+  }
+  const marksArr = [], gradingArr = [];
+  names.forEach(n => {
+    const isGrading = GRADING_HINTS.includes(n.toLowerCase().trim());
+    (isGrading ? gradingArr : marksArr).push({name:n, section: isGrading ? 'grading' : 'marks'});
+  });
+  return marksArr.concat(gradingArr);
+}
+
+// ── Subject config modal state ──
+let subjModel     = [];
+let pendingUpload = null;
+
+function subjRowHTML(s,i) {
+  return `<div class="subj-row" data-name="${esc(s.name)}">
+    <span class="subj-order">${i+1}</span>
+    <span class="subj-name">${esc(s.name)}</span>
+    <div class="subj-actions">
+      <button data-act="up" title="Move up">▲</button>
+      <button data-act="down" title="Move down">▼</button>
+      <button data-act="toggle" class="subj-toggle">${s.section==='marks' ? '➡️ To Grading' : '⬅️ To Marks'}</button>
+    </div>
+  </div>`;
+}
+function renderSubjModal() {
+  const marks   = subjModel.filter(s => s.section === 'marks');
+  const grading = subjModel.filter(s => s.section === 'grading');
+  document.getElementById('subjListMarks').innerHTML   = marks.length   ? marks.map(subjRowHTML).join('')   : '<div class="subj-empty">No subjects in this section.</div>';
+  document.getElementById('subjListGrading').innerHTML = grading.length ? grading.map(subjRowHTML).join('') : '<div class="subj-empty">No subjects in this section.</div>';
+}
+function moveSubject(name, dir) {
+  const item = subjModel.find(s => s.name === name);
+  if(!item) return;
+  const sameSection = subjModel.filter(s => s.section === item.section);
+  const pos = sameSection.indexOf(item);
+  const targetPos = pos + dir;
+  if(targetPos < 0 || targetPos >= sameSection.length) return;
+  const swapWith = sameSection[targetPos];
+  const i1 = subjModel.indexOf(item), i2 = subjModel.indexOf(swapWith);
+  [subjModel[i1], subjModel[i2]] = [subjModel[i2], subjModel[i1]];
+  renderSubjModal();
+}
+function toggleSubjSection(name) {
+  const item = subjModel.find(s => s.name === name);
+  if(!item) return;
+  subjModel = subjModel.filter(s => s !== item);
+  item.section = item.section === 'marks' ? 'grading' : 'marks';
+  if(item.section === 'marks') {
+    const firstGradingIdx = subjModel.findIndex(s => s.section === 'grading');
+    firstGradingIdx === -1 ? subjModel.push(item) : subjModel.splice(firstGradingIdx,0,item);
+  } else {
+    subjModel.push(item);
+  }
+  renderSubjModal();
+}
+document.getElementById('subjModalOverlay').addEventListener('click', e => {
+  const btn = e.target.closest('button[data-act]');
+  if(!btn) return;
+  const row = btn.closest('.subj-row');
+  const name = row.dataset.name;
+  const act = btn.dataset.act;
+  if(act==='up') moveSubject(name,-1);
+  else if(act==='down') moveSubject(name,1);
+  else toggleSubjSection(name);
+});
+function openSubjectConfigModal(config) {
+  subjModel = config.map(s => ({name:s.name, section:s.section}));
+  renderSubjModal();
+  document.getElementById('subjModalOverlay').classList.add('active');
+}
+function cancelSubjectConfig() {
+  document.getElementById('subjModalOverlay').classList.remove('active');
+  pendingUpload = null;
+  const btn = document.querySelector('#tab-results .btn-post');
+  btn.textContent='📊 Upload Results to Website'; btn.disabled=false;
+}
+async function confirmSubjectConfig() {
+  document.getElementById('subjModalOverlay').classList.remove('active');
+  if(!pendingUpload) return;
+  const { cls, term, session, file, rows } = pendingUpload;
+  const btn = document.querySelector('#tab-results .btn-post');
+  btn.textContent='⏳ Saving to Firebase...'; btn.disabled=true;
+  const subjectOrder = subjModel.map((s,i) => ({name:s.name, section:s.section, order:i}));
+  try {
+    const existingSnap = await getDocs(collection(db,'results'));
+    const existing = existingSnap.docs.find(d => d.data().className===cls && d.data().term===term && d.data().session===session);
+    if(existing) {
+      if(!confirm(`Results for ${cls} (${term}, ${session}) already exist. Replace them?`)) {
+        pendingUpload = null; btn.textContent='📊 Upload Results to Website'; btn.disabled=false; return;
+      }
+      await deleteDoc(doc(db,'results',existing.id));
+    }
+    // Save this layout as the class's reusable template
+    await setDoc(doc(db,'subjectTemplates',cls), { subjects: subjectOrder, updatedAt: serverTimestamp() });
+    await addDoc(collection(db,'results'),{
+      className: cls, term, session,
+      fileName:  file.name,
+      parsedData: rows,
+      subjectOrder,
+      studentCount: rows.length,
+      uploadedAt: serverTimestamp()
+    });
+    document.getElementById('rClass').value='';
+    document.getElementById('rTerm').value='';
+    document.getElementById('rSession').value='';
+    document.getElementById('rFile').value='';
+    setStatus('resultSuccess',`✅ ${rows.length} students uploaded for ${cls} (${term})! Live on results page now.`);
+  } catch(e) {
+    setStatus('resultSuccess','Upload failed: '+e.message, false);
+  }
+  pendingUpload = null;
+  btn.textContent='📊 Upload Results to Website'; btn.disabled=false;
+}
+
 async function uploadResults() {
   const cls     = document.getElementById('rClass').value;
   const term    = document.getElementById('rTerm').value;
@@ -597,37 +792,305 @@ async function uploadResults() {
     const rows = XLSX.utils.sheet_to_json(ws, { defval:'' });
     if(!rows.length){ setStatus('resultSuccess','No data found in sheet.',false); btn.textContent='📊 Upload Results to Website'; btn.disabled=false; return; }
 
-    // Check for existing result with same class+term — delete old one first
-    const existingSnap = await getDocs(collection(db,'results'));
-    const existing = existingSnap.docs.find(d => d.data().className===cls && d.data().term===term && d.data().session===session);
-    if(existing) {
-      if(!confirm(`Results for ${cls} (${term}, ${session}) already exist. Replace them?`)) {
-        btn.textContent='📊 Upload Results to Website'; btn.disabled=false; return;
-      }
-      await deleteDoc(doc(db,'results',existing.id));
-    }
+    // Detect subject columns from the header row
+    const headers  = Object.keys(rows[0]);
+    const detected = headers.filter(h => !RESULT_FIXED_COLS.includes(h.toLowerCase().trim()));
+    if(!detected.length){ setStatus('resultSuccess','No subject columns detected in the sheet.',false); btn.textContent='📊 Upload Results to Website'; btn.disabled=false; return; }
 
-    btn.textContent='⏳ Saving to Firebase...';
-    // Store parsed JSON data directly — no file needed
-    await addDoc(collection(db,'results'),{
-      className: cls, term, session,
-      fileName:  file.name,
-      parsedData: rows,
-      studentCount: rows.length,
-      uploadedAt: serverTimestamp()
-    });
+    // Load this class's saved subject layout, if one exists, as a starting point
+    let template = null;
+    try {
+      const tSnap = await getDoc(doc(db,'subjectTemplates',cls));
+      if(tSnap.exists()) template = tSnap.data().subjects;
+    } catch(e) { /* no template yet — fine */ }
 
-    document.getElementById('rClass').value='';
-    document.getElementById('rTerm').value='';
-    document.getElementById('rSession').value='';
-    document.getElementById('rFile').value='';
-    setStatus('resultSuccess',`✅ ${rows.length} students uploaded for ${cls} (${term})! Live on results page now.`);
+    pendingUpload = { cls, term, session, file, rows };
+    openSubjectConfigModal(buildSubjectConfig(detected, template));
+    btn.textContent='📊 Upload Results to Website'; btn.disabled=false;
   } catch(e) {
     setStatus('resultSuccess','Upload failed: '+e.message, false);
+    btn.textContent='📊 Upload Results to Website'; btn.disabled=false;
   }
-  btn.textContent='📊 Upload Results to Website'; btn.disabled=false;
 }
 async function delResult(id){ if(!confirm('Delete this result set?')) return; try{await deleteDoc(doc(db,'results',id));}catch(e){setStatus('resultSuccess','Delete failed.',false);} }
+
+// ══ PRINT WHOLE CLASS (one marksheet per student, one page each) ══
+function toastPrint(msg, ok=true) {
+  const el = document.getElementById('printStatus');
+  el.textContent = (ok?'✅ ':'❌ ') + msg;
+  el.style.cssText = 'display:block;' + (ok
+    ? 'background:rgba(22,163,74,0.08);border:1px solid rgba(22,163,74,0.3);color:var(--green)'
+    : 'background:rgba(220,38,38,0.07);border:1px solid rgba(220,38,38,0.25);color:var(--red)');
+  setTimeout(()=>el.style.display='none', 4000);
+}
+function pGetField(row, ...keys) {
+  for(const k of keys) { for(const rk of Object.keys(row)) { if(rk.toLowerCase().trim()===k.toLowerCase()) return row[rk]; } }
+  return '';
+}
+function pGetGrade(marks) {
+  if(isNaN(marks)) return marks;
+  if(marks>=91) return 'A+'; if(marks>=76) return 'A'; if(marks>=61) return 'B';
+  if(marks>=45) return 'C'; if(marks>=33) return 'D'; return 'F';
+}
+function pGradeClass(g){ const map={'A+':'aplus','A':'a','B':'b','C':'c','D':'d','F':'f'}; return 'grade-badge grade-'+(map[g]||'b'); }
+function pGradingDisplay(val){ if(val===undefined||val===null||val==='') return null; const n=Number(val); return (val!==''&&!isNaN(n)) ? pGetGrade(n) : String(val).toUpperCase(); }
+function pMarkDisplay(val,passMark){
+  if(val==='AB'||val==='ab') return `<span class="mark-ab">AB</span>`;
+  if(val==='NA'||val==='na'||val==='') return `<span class="mark-na">NA</span>`;
+  const n=Number(val);
+  if(isNaN(n)) return `<span class="mark-ab">${val}</span>`;
+  return n<passMark ? `<span class="mark-fail">${n}</span>` : `<span class="mark-pass">${n}</span>`;
+}
+
+// A subject column counts as "empty" (no real data anywhere in the class)
+// when its header is a blank/placeholder name (e.g. "__EMPTY", stray Excel
+// artifacts) or when every student's value for it is blank/NA.
+function pIsEmptySubject(colName, resultSet) {
+  const normName = String(colName).trim();
+  if(!normName || /^_+\s*empty/i.test(normName) || /^unnamed/i.test(normName)) return true;
+  const rows = (resultSet.parsedData||[]);
+  return rows.every(r => {
+    const v = r[colName];
+    if(v===undefined || v===null) return true;
+    const s = String(v).trim();
+    return s==='' || s.toLowerCase()==='na' || s.toLowerCase()==='n/a';
+  });
+}
+
+// Builds one student's marksheet as an HTML string, reusing the same
+// subjectOrder-based ordering/section logic as the public results page.
+// opts: { excludeEmpty: boolean, logoSrc: string }
+function buildStudentMarksheetHTML(student, resultSet, opts={}) {
+  const name = student['NAME'] || student['Name'] || student['STUDENT NAME'] || student['Student Name'] || 'Student';
+
+  let subjectCols, gradingCols;
+  if(Array.isArray(resultSet.subjectOrder) && resultSet.subjectOrder.length) {
+    const sorted = resultSet.subjectOrder.slice().sort((a,b)=>(a.order||0)-(b.order||0));
+    const matchKey = (nm) => {
+      if(student.hasOwnProperty(nm)) return nm;
+      const norm = String(nm).toLowerCase().trim();
+      return Object.keys(student).find(k=>k.toLowerCase().trim()===norm) || nm;
+    };
+    subjectCols = sorted.filter(s=>s.section!=='grading').map(s=>matchKey(s.name));
+    gradingCols = sorted.filter(s=>s.section==='grading').map(s=>matchKey(s.name));
+  } else {
+    const headers = Object.keys(student);
+    subjectCols = headers.filter(h=>!RESULT_FIXED_COLS.includes(h.toLowerCase().trim()));
+    gradingCols = [];
+  }
+
+  if(opts.excludeEmpty) {
+    subjectCols = subjectCols.filter(sub => !pIsEmptySubject(sub, resultSet));
+    gradingCols = gradingCols.filter(sub => !pIsEmptySubject(sub, resultSet));
+  }
+
+  const allMarks = subjectCols.map(sub=>{ const v=student[sub]; return isNaN(v)?null:Number(v); }).filter(v=>v!==null);
+  const highestInClass = {};
+  subjectCols.forEach(sub=>{
+    const max = Math.max(...resultSet.parsedData.map(r=>Number(r[sub])).filter(v=>!isNaN(v)&&v>0));
+    highestInClass[sub] = isFinite(max) ? max : 100;
+  });
+
+  const rollNo     = pGetField(student,'roll number','roll no','Roll No');
+  const fatherName = pGetField(student,"father's name",'father name','Father Name');
+  const drawing    = pGetField(student,'drawing');
+  const writing    = pGetField(student,'writing');
+  const total      = pGetField(student,'total','total marks');
+  const pct        = pGetField(student,'%','percentage');
+  const attendance = pGetField(student,'attendance');
+  const remark     = pGetField(student,'remark','remarks');
+  const rank       = pGetField(student,'rank');
+  const maxMarks   = subjectCols.length * 100;
+  const passMark   = 33;
+
+  // Marks section: subject name, marks, highest — no grade column here.
+  const subjectRows = subjectCols.map(sub=>{
+    const val = student[sub];
+    const highest = highestInClass[sub];
+    return `<tr>
+      <td style="font-weight:600">${sub}</td>
+      <td>${pMarkDisplay(val,passMark)}</td>
+      <td style="color:var(--mid)">${highest}</td>
+    </tr>`;
+  }).join('');
+
+  const totalDisplay = total || allMarks.reduce((a,b)=>a+b,0);
+
+  // Grading section: Drawing/Writing sit alongside any admin-configured
+  // grade-only subjects, all together under one "Grading Section" heading.
+  const gradingItems = [
+    drawing ? `<div class="ms-extra"><span class="ms-extra-label">Drawing :</span><span class="ms-extra-val ${pGradeClass(drawing)}">&nbsp;${drawing}&nbsp;</span></div>` : '',
+    writing ? `<div class="ms-extra"><span class="ms-extra-label">Writing :</span><span class="ms-extra-val ${pGradeClass(writing)}">&nbsp;${writing}&nbsp;</span></div>` : '',
+    ...gradingCols.map(sub=>{ const g=pGradingDisplay(student[sub]); return g?`<div class="ms-extra"><span class="ms-extra-label">${sub} :</span><span class="ms-extra-val ${pGradeClass(g)}">&nbsp;${g}&nbsp;</span></div>`:''; })
+  ].filter(Boolean).join('');
+
+  const logoHTML = opts.logoSrc
+    ? `<div class="ms-logo"><img src="${opts.logoSrc}" alt="AKSD School Logo"></div>`
+    : '';
+
+  return `
+  <div class="marksheet-card">
+    <div class="ms-header">
+      ${logoHTML}
+      <div class="ms-school-info">
+        <div class="ms-school-name">Anil Kumar Shakuntala Devi Residential School</div>
+        <div class="ms-school-addr">Shankardham, Chandayan, Mohanpur, Deoghar (JH) – 814157<br>A Unit of Sishupalan Educational &amp; Welfare Society</div>
+        <div class="ms-school-phone">☎ 7903381982 &nbsp;|&nbsp; 7903936449</div>
+      </div>
+      <div class="ms-report-badge">
+        <small>Web Copy</small>
+        REPORT CARD
+        <div style="font-size:11px;font-weight:400;margin-top:4px;opacity:0.85">Session: ${resultSet.session||'—'}</div>
+      </div>
+    </div>
+    <div class="ms-student">
+      <div class="ms-field"><div class="ms-field-label">Student Name</div><div class="ms-field-val">${name}</div></div>
+      <div class="ms-field"><div class="ms-field-label">Father's Name</div><div class="ms-field-val">${fatherName||'—'}</div></div>
+      <div class="ms-field"><div class="ms-field-label">Class &amp; Section</div><div class="ms-field-val">${resultSet.className}${pGetField(student,'section')?' — Section '+pGetField(student,'section'):''}</div></div>
+      <div class="ms-field"><div class="ms-field-label">Roll Number</div><div class="ms-field-val">${rollNo||'—'}</div></div>
+      <div class="ms-field"><div class="ms-field-label">Examination</div><div class="ms-field-val">${resultSet.term}</div></div>
+      <div class="ms-field"><div class="ms-field-label">Academic Session</div><div class="ms-field-val">${resultSet.session||'—'}</div></div>
+    </div>
+    <div class="ms-term-header">
+      <div class="ms-term-title">📋 ${resultSet.term} — Marks Statement</div>
+      <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+        <span class="ms-session">${resultSet.session}</span>
+        <span class="ms-fullmarks">Full Marks: 100 &nbsp;|&nbsp; Passing Marks: ${passMark}</span>
+      </div>
+    </div>
+    <div class="ms-table-wrap">
+      <table class="ms-table">
+        <thead><tr><th style="width:45%">Subject</th><th>Obtained Marks</th><th>Highest in Class</th></tr></thead>
+        <tbody>${subjectRows}</tbody>
+        <tfoot><tr><td>TOTAL MARKS</td><td>${totalDisplay}</td><td style="font-size:0.8rem;opacity:0.75">Out of ${maxMarks}</td></tr></tfoot>
+      </table>
+    </div>
+    <div class="ms-summary">
+      <div class="ms-sum-box"><div class="ms-sum-val">${totalDisplay}</div><div class="ms-sum-label">Total Marks</div></div>
+      <div class="ms-sum-box"><div class="ms-sum-val">${pct?parseFloat(pct).toFixed(2)+'%':'—'}</div><div class="ms-sum-label">Percentage</div></div>
+      <div class="ms-sum-box"><div class="ms-sum-val">${rank||'—'}</div><div class="ms-sum-label">Class Rank</div></div>
+      <div class="ms-sum-box"><div class="ms-sum-val" style="font-size:1.1rem">${attendance||'—'}</div><div class="ms-sum-label">Attendance</div></div>
+    </div>
+    ${gradingItems ? `<div class="ms-extras-title">🏅 Grading Section</div><div class="ms-extras">${gradingItems}</div>` : ''}
+    ${remark?`<div class="ms-remark"><span class="ms-remark-label">Remarks :</span><span class="ms-remark-text">${remark}</span></div>`:''}
+    <div class="ms-footer">
+      <div class="ms-footer-note">★ <strong>Full Marks – 100 &nbsp;|&nbsp; Passing Marks – ${passMark}</strong></div>
+      <div class="ms-watermark">Web Copy — AKSD Residential School</div>
+    </div>
+  </div>`;
+}
+
+async function printClassResults(resultId) {
+  const resultSet = allResultSets.find(r=>r.id===resultId);
+  if(!resultSet) { toastPrint('Result set not found.',false); return; }
+  if(!resultSet.parsedData || !resultSet.parsedData.length) { toastPrint('No students in this result set.',false); return; }
+
+  // Option to drop subjects that carry no real data (blank/NA columns, or
+  // stray placeholder headers like "__EMPTY") before printing the class.
+  const excludeEmpty = confirm('Remove subjects with no data (e.g. blank/"__EMPTY" columns) from this printout?\n\nOK = skip empty subjects\nCancel = print all subjects as-is');
+
+  const logoImg = document.querySelector('.topbar-brand img');
+  const logoSrc = logoImg ? logoImg.src : '';
+
+  toastPrint(`Preparing ${resultSet.parsedData.length} marksheets…`);
+
+  const pagesHTML = resultSet.parsedData.map(student => buildStudentMarksheetHTML(student, resultSet, {excludeEmpty, logoSrc})).join('\n');
+
+  const printWin = window.open('', '_blank');
+  if(!printWin) { toastPrint('Popup blocked — please allow popups for this site and try again.',false); return; }
+
+  printWin.document.write(`<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>${esc(resultSet.className)} — ${esc(resultSet.term)} Results</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root { --navy:#071a40; --blue:#0d2a5e; --accent:#1a4fa0; --gold:#e8751a; --gold-l:#f5a94e;
+    --green:#16a34a; --red:#dc2626; --text:#1a1a1a; --mid:#4b5563; --light:#9ca3af; --border:#e5e7eb; --bg:#f8fafc; }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'DM Sans',sans-serif;background:#eef1f6;color:var(--text);padding:24px}
+  .print-toolbar{max-width:900px;margin:0 auto 20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+  .print-toolbar h2{font-family:'Playfair Display',serif;color:var(--navy);font-size:1.15rem}
+  .print-toolbar button{background:var(--navy);color:white;border:none;border-radius:8px;padding:10px 20px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:0.9rem}
+  .marksheet-card{background:white;border-radius:20px;box-shadow:0 8px 40px rgba(0,0,0,0.08);border:1px solid var(--border);overflow:hidden;max-width:900px;margin:0 auto 28px}
+  .ms-header{background:linear-gradient(135deg,var(--navy) 0%,#0d2a5e 100%);padding:24px 32px;display:flex;align-items:center;gap:20px}
+  .ms-logo{width:56px;height:56px;border-radius:50%;background:white;padding:3px;box-shadow:0 2px 10px rgba(0,0,0,0.3);overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+  .ms-logo img{width:100%;height:100%;object-fit:contain;border-radius:50%}
+  .ms-school-info{flex:1}
+  .ms-school-name{font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:900;color:white;line-height:1.2;margin-bottom:4px}
+  .ms-school-addr{font-size:0.75rem;color:rgba(255,255,255,0.65);line-height:1.5}
+  .ms-school-phone{font-size:0.8rem;color:var(--gold-l);font-weight:600;margin-top:4px}
+  .ms-report-badge{background:var(--gold);color:white;padding:8px 20px;border-radius:8px;font-family:'Playfair Display',serif;font-size:0.95rem;font-weight:700;text-align:center;white-space:nowrap}
+  .ms-report-badge small{display:block;font-size:10px;font-weight:400;letter-spacing:1px;text-transform:uppercase;margin-bottom:2px;opacity:0.85}
+  .ms-student{padding:20px 32px;background:#f9fafb;border-bottom:1px solid var(--border);display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  .ms-field-label{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--light);margin-bottom:3px}
+  .ms-field-val{font-size:0.9rem;font-weight:600;color:var(--navy)}
+  .ms-term-header{padding:14px 32px;background:linear-gradient(to right,rgba(232,117,26,0.1),rgba(232,117,26,0.03));border-bottom:2px solid var(--gold);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+  .ms-term-title{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:var(--navy)}
+  .ms-session{font-size:0.8rem;color:var(--mid);font-weight:500}
+  .ms-fullmarks{font-size:0.75rem;color:var(--mid);background:rgba(232,117,26,0.1);padding:4px 12px;border-radius:100px;border:1px solid rgba(232,117,26,0.25)}
+  .ms-table-wrap{padding:24px 32px 0}
+  .ms-table{width:100%;border-collapse:collapse;font-size:0.875rem}
+  .ms-table thead tr{background:var(--navy)}
+  .ms-table thead th{padding:10px 14px;color:white;font-weight:600;font-size:11px;letter-spacing:0.5px;text-align:left}
+  .ms-table thead th:last-child{text-align:center}
+  .ms-table thead th:nth-child(2),.ms-table thead th:nth-child(3){text-align:center}
+  .ms-table tbody tr{border-bottom:1px solid #f3f4f6}
+  .ms-table tbody td{padding:10px 14px;color:var(--text)}
+  .ms-table tbody td:nth-child(2),.ms-table tbody td:nth-child(3){text-align:center;font-weight:600}
+  .ms-table tbody td:nth-child(4){text-align:center}
+  .ms-table tfoot tr{background:linear-gradient(to right,var(--navy),#0d2a5e)}
+  .ms-table tfoot td{padding:12px 14px;color:white;font-weight:700;font-size:0.9rem}
+  .ms-table tfoot td:nth-child(2){text-align:center}
+  .mark-ab{color:var(--red);font-weight:700;font-size:11px}
+  .mark-na{color:var(--light);font-size:11px}
+  .mark-pass{color:var(--green);font-weight:600}
+  .mark-fail{color:var(--red);font-weight:700}
+  .grade-badge{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:6px;font-size:11px;font-weight:700}
+  .grade-aplus{background:rgba(22,163,74,0.15);color:#15803d}
+  .grade-a{background:rgba(34,197,94,0.12);color:#16a34a}
+  .grade-b{background:rgba(59,130,246,0.12);color:#2563eb}
+  .grade-c{background:rgba(234,179,8,0.12);color:#ca8a04}
+  .grade-d{background:rgba(249,115,22,0.12);color:#ea580c}
+  .grade-f{background:rgba(220,38,38,0.12);color:#dc2626}
+  .ms-summary{padding:20px 32px;display:grid;grid-template-columns:repeat(4,1fr);gap:14px;background:#f9fafb;border-top:1px solid var(--border)}
+  .ms-sum-box{background:white;border-radius:12px;padding:14px 16px;border:1px solid var(--border);text-align:center}
+  .ms-sum-val{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:900;color:var(--navy);line-height:1}
+  .ms-sum-label{font-size:10px;color:var(--light);text-transform:uppercase;letter-spacing:1px;margin-top:4px}
+  .ms-extras-title{padding:12px 32px 0;font-family:'Playfair Display',serif;font-size:0.85rem;font-weight:700;color:var(--gold);border-top:1px solid var(--border);letter-spacing:0.3px}
+  .ms-extras{padding:10px 32px 16px;display:flex;gap:32px;flex-wrap:wrap}
+  .ms-extra{display:flex;align-items:center;gap:8px;font-size:0.875rem}
+  .ms-extra-label{color:var(--mid);font-weight:500}
+  .ms-extra-val{font-weight:700;color:var(--navy)}
+  .ms-remark{padding:14px 32px;background:rgba(232,117,26,0.04);border-top:1px solid rgba(232,117,26,0.15);display:flex;align-items:flex-start;gap:10px}
+  .ms-remark-label{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--gold);white-space:nowrap;margin-top:2px}
+  .ms-remark-text{font-size:0.875rem;color:var(--navy);font-weight:600;font-style:italic}
+  .ms-footer{padding:16px 32px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:#fafafa}
+  .ms-footer-note{font-size:11px;color:var(--mid)}
+  .ms-footer-note strong{color:var(--navy)}
+  .ms-watermark{font-size:10px;color:var(--light);letter-spacing:1px;text-transform:uppercase}
+  @media print {
+    body{background:white;padding:0}
+    .print-toolbar{display:none}
+    .marksheet-card{box-shadow:none;border:1px solid #ccc;border-radius:0;margin:0 auto;page-break-after:always}
+    .marksheet-card:last-child{page-break-after:auto}
+    .ms-header,.ms-table thead tr,.ms-table tfoot tr{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  }
+</style>
+</head>
+<body>
+  <div class="print-toolbar">
+    <h2>${esc(resultSet.className)} — ${esc(resultSet.term)} (${resultSet.parsedData.length} students)</h2>
+    <button onclick="window.print()">🖨️ Print / Save as PDF</button>
+  </div>
+  ${pagesHTML}
+</body>
+</html>`);
+  printWin.document.close();
+  toastPrint(`${resultSet.parsedData.length} marksheets ready — opened in a new tab.`);
+}
 
 // ── EXPOSE GLOBALS ──
 window.doLogin=doLogin; window.doLogout=doLogout; window.doForgotPassword=doForgotPassword;
@@ -635,7 +1098,8 @@ window.toggleEye=toggleEye; window.switchTab=switchTab;
 window.postNotice=postNotice; window.qPost=qPost; window.clearAllNotices=clearAllNotices;
 window.uploadPhotos=uploadPhotos; window.clearGallery=clearGallery;
 window.uploadResults=uploadResults;
-window._delN=delNotice; window._delP=delPhoto; window._delR=delResult;
+window.cancelSubjectConfig=cancelSubjectConfig; window.confirmSubjectConfig=confirmSubjectConfig;
+window._delN=delNotice; window._delP=delPhoto; window._delR=delResult; window._printR=printClassResults;
 </script>
 </body>
 </html>
