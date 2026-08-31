@@ -158,6 +158,11 @@
   .format-box { background: var(--bg); border-radius: 10px; padding: 16px; border: 1px solid var(--border); font-size: 0.82rem; color: var(--mid); line-height: 2; }
   .r-print { background: none; border: none; cursor: pointer; color: var(--accent); font-size: 13px; opacity: 0.6; transition: opacity 0.2s; padding: 4px 6px; }
   .r-print:hover { opacity: 1; }
+  .r-pub { background: none; border: none; cursor: pointer; font-size: 13px; opacity: 0.6; transition: opacity 0.2s; padding: 4px 6px; }
+  .r-pub:hover { opacity: 1; }
+  .r-pub-badge { font-size: 0.72rem; font-weight: 600; padding: 2px 8px; border-radius: 20px; white-space: nowrap; }
+  .r-pub-badge.r-pub-on { background: rgba(34,197,94,0.12); color: #16a34a; }
+  .r-pub-badge.r-pub-off { background: rgba(148,163,184,0.15); color: #64748b; }
 
   /* SUBJECT CONFIG MODAL */
   .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(7,26,64,0.55); z-index: 500; align-items: center; justify-content: center; padding: 20px; }
@@ -206,7 +211,7 @@
     <div class="topbar-name">AKSD Admin Panel<span>Deoghar, Jharkhand</span></div>
   </div>
   <div class="topbar-right">
-    <a href="https://theaksd.org" target="_blank" class="btn-visit">← Visit Website</a>
+    <a href="https://web.theaksd.org" target="_blank" class="btn-visit">← Visit Website</a>
     <span class="topbar-email" id="topEmail"><span class="status-dot"></span><span id="adminEmailLabel"></span></span>
     <button class="btn-logout" id="btnLogout" onclick="doLogout()">Logout</button>
   </div>
@@ -248,7 +253,7 @@
         <h1>📋 AKSD Admin Panel</h1>
         <p id="dashGreet">Welcome back!</p>
       </div>
-      <a href="https://theaksd.org" target="_blank"
+      <a href="https://web.theaksd.org" target="_blank"
          style="background:var(--navy);color:white;padding:10px 22px;border-radius:8px;text-decoration:none;font-size:0.85rem;font-weight:700">
         👁️ View Public Site
       </a>
@@ -429,7 +434,7 @@ import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, sendP
                             from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { getFirestore, collection, addDoc, deleteDoc, getDocs,
          doc, query, orderBy, onSnapshot, serverTimestamp, writeBatch,
-         setDoc, getDoc }
+         setDoc, getDoc, updateDoc }
                             from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -616,7 +621,10 @@ function initResults() {
     document.getElementById('statResults').textContent=arr.length;
     list.innerHTML=!arr.length
       ?'<div style="text-align:center;padding:20px;color:var(--light);font-size:0.85rem">No results uploaded yet.</div>'
-      :arr.map(r=>`<div class="result-item"><div class="r-info"><span class="r-tag">${esc(r.term)}</span><strong style="color:var(--navy)">${esc(r.className)}</strong><span style="color:var(--mid);font-size:0.82rem">${esc(r.session)} · ${r.studentCount||(r.parsedData?r.parsedData.length:0)} students</span></div><div style="display:flex;align-items:center"><button class="r-print" title="Print whole class" onclick="window._printR('${r.id}')">🖨️</button><button class="r-del" onclick="window._delR('${r.id}')">🗑️</button></div></div>`).join('');
+      :arr.map(r=>{
+        const isPublished = r.published !== false; // default true for older docs without the field
+        return `<div class="result-item"><div class="r-info"><span class="r-tag">${esc(r.term)}</span><strong style="color:var(--navy)">${esc(r.className)}</strong><span style="color:var(--mid);font-size:0.82rem">${esc(r.session)} · ${r.studentCount||(r.parsedData?r.parsedData.length:0)} students</span><span class="r-pub-badge ${isPublished?'r-pub-on':'r-pub-off'}">${isPublished?'🟢 Published':'⚪ Unpublished'}</span></div><div style="display:flex;align-items:center"><button class="r-pub" title="${isPublished?'Unpublish (hide from results page)':'Publish (make live on results page)'}" onclick="window._togglePub('${r.id}',${isPublished})">${isPublished?'🙈':'📢'}</button><button class="r-print" title="Print whole class" onclick="window._printR('${r.id}')">🖨️</button><button class="r-del" onclick="window._delR('${r.id}')">🗑️</button></div></div>`;
+      }).join('');
   });
 }
 
@@ -738,6 +746,7 @@ async function confirmSubjectConfig() {
       parsedData: rows,
       subjectOrder,
       studentCount: rows.length,
+      published: true,
       uploadedAt: serverTimestamp()
     });
     document.getElementById('rClass').value='';
@@ -813,6 +822,20 @@ async function uploadResults() {
   }
 }
 async function delResult(id){ if(!confirm('Delete this result set?')) return; try{await deleteDoc(doc(db,'results',id));}catch(e){setStatus('resultSuccess','Delete failed.',false);} }
+
+async function togglePublish(id, currentlyPublished) {
+  const action = currentlyPublished ? 'unpublish' : 'publish';
+  const msg = currentlyPublished
+    ? 'Unpublish this result set? Students/parents will no longer see it on the results page.'
+    : 'Publish this result set? It will become visible on the public results page.';
+  if(!confirm(msg)) return;
+  try {
+    await updateDoc(doc(db,'results',id), { published: !currentlyPublished });
+    setStatus('resultSuccess', currentlyPublished ? '⚪ Result set unpublished.' : '🟢 Result set published — now live on the results page.');
+  } catch(e) {
+    setStatus('resultSuccess', `Failed to ${action}: ${e.message}`, false);
+  }
+}
 
 // ══ PRINT WHOLE CLASS (one marksheet per student, one page each) ══
 function toastPrint(msg, ok=true) {
@@ -1099,7 +1122,7 @@ window.postNotice=postNotice; window.qPost=qPost; window.clearAllNotices=clearAl
 window.uploadPhotos=uploadPhotos; window.clearGallery=clearGallery;
 window.uploadResults=uploadResults;
 window.cancelSubjectConfig=cancelSubjectConfig; window.confirmSubjectConfig=confirmSubjectConfig;
-window._delN=delNotice; window._delP=delPhoto; window._delR=delResult; window._printR=printClassResults;
+window._delN=delNotice; window._delP=delPhoto; window._delR=delResult; window._printR=printClassResults; window._togglePub=togglePublish;
 </script>
 </body>
 </html>
